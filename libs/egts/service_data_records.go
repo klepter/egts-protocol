@@ -22,7 +22,7 @@ type ServiceDataRecord struct {
 	TimeFieldExists          string    `json:"TMFE"`
 	EventIDFieldExists       string    `json:"EVFE"`
 	ObjectIDFieldExists      string    `json:"OBFE"`
-	ObjectIdentifier         uint32    `json:"OID"`
+	ObjectIdentifier         uint64    `json:"OID"`
 	EventIdentifier          uint32    `json:"EVID"`
 	Time                     time.Time `json:"TM"`
 	SourceServiceType        byte      `json:"SST"`
@@ -68,11 +68,11 @@ func (s *ServiceDataSet) Decode(serviceDS []byte) error {
 		sdr.ObjectIDFieldExists = flagBits[7:]
 
 		if sdr.ObjectIDFieldExists == "1" {
-			oid := make([]byte, 4)
+			oid := make([]byte, 8)
 			if _, err := buf.Read(oid); err != nil {
 				return fmt.Errorf("не удалось получить идентификатор объекта SDR: %v", err)
 			}
-			sdr.ObjectIdentifier = binary.LittleEndian.Uint32(oid)
+			sdr.ObjectIdentifier = binary.LittleEndian.Uint64(oid)
 		}
 
 		if sdr.EventIDFieldExists == "1" {

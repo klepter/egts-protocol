@@ -10,7 +10,7 @@ import (
 //SrTermIdentity структура подзаписи типа EGTS_SR_TERM_IDENTITY, которая используется АС при запросе
 //авторизации на телематическую платформу и содержит учетные данные АС.
 type SrTermIdentity struct {
-	TerminalIdentifier       uint32 `json:"TID"`
+	TerminalIdentifier       uint64 `json:"TID"`
 	MNE                      string `json:"MNE"`
 	BSE                      string `json:"BSE"`
 	NIDE                     string `json:"NIDE"`
@@ -26,6 +26,7 @@ type SrTermIdentity struct {
 	NetworkIdentifier        []byte `json:"NID"`
 	BufferSize               uint16 `json:"BS"`
 	MobileNumber             string `json:"MSISDN"`
+	SSLPV					 string `json:"SSLPV"`
 }
 
 //Decode разбирает байты в структуру подзаписи
@@ -36,11 +37,11 @@ func (e *SrTermIdentity) Decode(content []byte) error {
 	)
 	buf := bytes.NewReader(content)
 
-	tmpBuf := make([]byte, 4)
+	tmpBuf := make([]byte, 8)
 	if _, err = buf.Read(tmpBuf); err != nil {
 		return fmt.Errorf("Не удалось получить идентификатор терминал при авторизации")
 	}
-	e.TerminalIdentifier = binary.LittleEndian.Uint32(tmpBuf)
+	e.TerminalIdentifier = binary.LittleEndian.Uint64(tmpBuf)
 
 	if flags, err = buf.ReadByte(); err != nil {
 		return fmt.Errorf("Не удалось считать байт флагов term identify: %v", err)
@@ -111,6 +112,12 @@ func (e *SrTermIdentity) Decode(content []byte) error {
 		e.MobileNumber = string(tmpBuf)
 	}
 
+	tmpBuf = make([]byte, 2)
+	if _, err = buf.Read(tmpBuf); err != nil {
+		return fmt.Errorf("Не удалось получить номер версии протокола")
+	}
+	e.SSLPV = string(tmpBuf)
+
 	return err
 }
 
@@ -169,9 +176,15 @@ func (e *SrTermIdentity) Encode() ([]byte, error) {
 	}
 
 	if e.MNE == "1" {
-		if _, err = buf.Write([]byte(e.MobileNumber)); err != nil {
+		mobileNumber := make([]byte, 15)
+		copy(mobileNumber, e.MobileNumber)
+		if _, err = buf.Write(mobileNumber); err != nil {
 			return result, fmt.Errorf("Не удалось записать телефонный номер мобильного абонента")
 		}
+	}
+
+	if _, err = buf.Write([]byte(e.SSLPV)); err != nil {
+		return result, fmt.Errorf("Не удалось записать номер версии протокола")
 	}
 
 	result = buf.Bytes()

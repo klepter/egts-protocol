@@ -79,6 +79,8 @@ func (rds *RecordDataSet) Decode(recDS []byte) error {
 			rd.SubrecordData = &SrDispatcherIdentity{}
 		case SrPassengersCountersType:
 			rd.SubrecordData = &SrPassengersCountersData{}
+		case SrServiceInfoType:
+			rd.SubrecordData = &SrServiceInfo{}
 		default:
 			log.Infof("Не известный тип подзаписи: %d. Длина: %d. Содержимое: %X", rd.SubrecordType, rd.SubrecordLength, subRecordBytes)
 			continue

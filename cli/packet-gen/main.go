@@ -106,7 +106,7 @@ func main() {
 				EventIDFieldExists:       "1",
 				ObjectIDFieldExists:      "1",
 				EventIdentifier:          3436,
-				ObjectIdentifier:         uint32(oid),
+				ObjectIdentifier:         uint64(oid),
 				SourceServiceType:        2,
 				RecipientServiceType:     2,
 				RecordDataSet: egts.RecordDataSet{
@@ -131,18 +131,45 @@ func main() {
 							Odometer:            191,
 							DigitalInputs:       144,
 							Source:              0,
+							NetworkIdentifier:	 144,
+							LocalAreaCode:		 144,
+							CellIdentifier:		 144,
+							SignalStrength:		 1,
 							Altitude:            30,
 						},
 					},
+				},
+			},
+			egts.ServiceDataRecord{
+				RecordNumber:             2,
+				SourceServiceOnDevice:    "1",
+				RecipientServiceOnDevice: "0",
+				Group:                    "0",
+				RecordProcessingPriority: "10",
+				TimeFieldExists:          "0",
+				EventIDFieldExists:       "0",
+				ObjectIDFieldExists:      "0",
+				ObjectIdentifier:         uint64(oid),
+				EventIdentifier:          3437,
+				SourceServiceType:        1,
+				RecipientServiceType:     1,
+				RecordDataSet: egts.RecordDataSet{
 					egts.RecordData{
-						SubrecordType: 27,
-						SubrecordData: &egts.SrLiquidLevelSensor{
-							LiquidLevelSensorErrorFlag: "1",
-							LiquidLevelSensorValueUnit: "00",
-							RawDataFlag:                "0",
-							LiquidLevelSensorNumber:    1,
-							ModuleAddress:              uint16(1),
-							LiquidLevelSensorData:      uint32(liqLvl),
+						SubrecordType: 1,
+						SubrecordData: &egts.SrTermIdentity{
+							TerminalIdentifier:		uint64(oid),
+							MNE:					"1",
+							BSE:					"0",
+							NIDE:					"1",
+							SSRA:					"1",
+							LNGCE:					"0",
+							IMSIE:					"0",
+							IMEIE:					"1",
+							HDIDE:					"0",
+							IMEI:					"861536020196001",
+							NetworkIdentifier:		[]byte{0, 1, 4},
+							MobileNumber:			"+79526341589",
+							SSLPV:					"00",
 						},
 					},
 				},
@@ -155,6 +182,7 @@ func main() {
 		fmt.Println("Encode message failed: ", err)
 		os.Exit(1)
 	}
+	fmt.Println("Encoded package: ", sendBytes)
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp", server)
 	if err != nil {
@@ -174,7 +202,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	ackBuf := make([]byte, 1024)
+	ackBuf := make([]byte, 2048)
 
 	_ = conn.SetReadDeadline(time.Now().Add(time.Duration(ackTimeout) * time.Second))
 	ackLen, err := conn.Read(ackBuf)

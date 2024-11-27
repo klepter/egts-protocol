@@ -59,7 +59,7 @@ func (s *Server) handleConn(conn net.Conn) {
 		serviceType       uint8
 		srResponsesRecord egts.RecordDataSet
 		recvPacket        []byte
-		client            uint32
+		client            uint64
 	)
 
 	if s.store == nil {

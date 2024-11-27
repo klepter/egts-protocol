@@ -9,6 +9,9 @@ const SrTermIdentityType = 1
 // SrModuleDataType код типа подзаписи EGTS_SR_MODULE_DATA
 const SrModuleDataType = 2
 
+// SrServiceInfoType код типа подзаписи EGTS_SR_SERVICE_INFO
+const SrServiceInfoType = 8
+
 //SrResultCodeType код типа подзаписи EGTS_SR_RESULT_CODE
 const SrResultCodeType = 9
 

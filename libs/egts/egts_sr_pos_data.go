@@ -29,6 +29,10 @@ type SrPosData struct {
 	Odometer            uint32    `json:"ODM"`
 	DigitalInputs       byte      `json:"DIN"`
 	Source              byte      `json:"SRC"`
+	NetworkIdentifier	uint32	  `json:"NID"`
+	LocalAreaCode		uint32	  `json:"LAC"`
+	CellIdentifier		uint16	  `json:"CID"`
+	SignalStrength		byte	  `json:"SS"`
 	Altitude            uint32    `json:"ALT"`
 	SourceData          int16     `json:"SRCD"`
 }
@@ -117,6 +121,27 @@ func (e *SrPosData) Decode(content []byte) error {
 		return fmt.Errorf("Не удалось получить источник (событие), инициировавший посылку: %v", err)
 	}
 
+	bytesTmpBuf = make([]byte, 3)
+	if _, err = buf.Read(bytesTmpBuf); err != nil {
+		return fmt.Errorf("Не удалось получить идентификатор станции сети: %v", err)
+	}
+	bytesTmpBuf = append(bytesTmpBuf, 0x00)
+	e.NetworkIdentifier = binary.LittleEndian.Uint32(bytesTmpBuf)
+
+	if _, err = buf.Read(tmpUint32Buf); err != nil {
+		return fmt.Errorf("Не удалось идентификатор локальной зоны базовой станции сети: %v", err)
+	}
+	e.LocalAreaCode = binary.LittleEndian.Uint32(tmpUint32Buf)
+
+	if _, err = buf.Read(tmpUint16Buf); err != nil {
+		return fmt.Errorf("Не удалось получить идентификатор ячейки базовой станции: %v", err)
+	}
+	e.CellIdentifier = binary.LittleEndian.Uint16(tmpUint16Buf)
+
+	if e.SignalStrength, err = buf.ReadByte(); err != nil {
+		return fmt.Errorf("Не удалось получить силу сигнала: %v", err)
+	}
+
 	if e.ALTE == "1" {
 		bytesTmpBuf = []byte{0, 0, 0, 0}
 		if _, err = buf.Read(bytesTmpBuf); err != nil {
@@ -190,6 +215,23 @@ func (e *SrPosData) Encode() ([]byte, error) {
 
 	if err = binary.Write(buf, binary.LittleEndian, e.Source); err != nil {
 		return result, fmt.Errorf("Не удалось записать источник (событие), инициировавший посылку: %v", err)
+	}
+
+	binary.LittleEndian.PutUint32(bytesTmpBuf, e.NetworkIdentifier)
+	if _, err = buf.Write(bytesTmpBuf[:3]); err != nil {
+		return result, fmt.Errorf("Не удалось записать идентификатор сети: %v", err)
+	}
+
+	if err = binary.Write(buf, binary.LittleEndian, uint32(e.LocalAreaCode)); err != nil {
+		return result, fmt.Errorf("Не удалось записать идентификатор локальной зоны базовой станции сети: %v", err)
+	}
+
+	if err = binary.Write(buf, binary.LittleEndian, uint16(e.CellIdentifier)); err != nil {
+		return result, fmt.Errorf("Не удалось записать идентификатор ячейки базовой станции: %v", err)
+	}
+
+	if err = binary.Write(buf, binary.LittleEndian, e.SignalStrength); err != nil {
+		return result, fmt.Errorf("Не удалось записать силу сигнала сети: %v", err)
 	}
 
 	if e.ALTE == "1" {

@@ -5,7 +5,7 @@ import (
 )
 
 type NavRecord struct {
-	Client              uint32         `json:"client"`
+	Client              uint64         `json:"client"`
 	PacketID            uint32         `json:"packet_id"`
 	NavigationTimestamp int64          `json:"navigation_unix_time"`
 	ReceivedTimestamp   int64          `json:"received_unix_time"`
