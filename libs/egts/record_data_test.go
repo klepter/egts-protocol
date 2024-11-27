@@ -8,7 +8,8 @@ import (
 
 var (
 	testRecordDataBytes = []byte{0x10, 0x15, 0x00, 0xD5, 0x3F, 0x01, 0x10, 0x6F, 0x1C, 0x05, 0x9E, 0x7A, 0xB5,
-		0x3C, 0x35, 0x01, 0xD0, 0x87, 0x2C, 0x01, 0x00, 0x00, 0x00, 0x00}
+		0x3C, 0x35, 0x01, 0xD0, 0x87, 0x2C, 0x01, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
+		0x01, 0x00, 0x01}
 )
 
 func TestRecordDataSet_Encode(t *testing.T) {
@@ -33,6 +34,10 @@ func TestRecordDataSet_Encode(t *testing.T) {
 				Odometer:            1,
 				DigitalInputs:       0,
 				Source:              0,
+				NetworkIdentifier:   1,
+				LocalAreaCode:       1,
+				CellIdentifier:      1,
+				SignalStrength:      1,
 			},
 		},
 	}
@@ -68,6 +73,10 @@ func TestRecordDataSet_Decode(t *testing.T) {
 				Odometer:            1,
 				DigitalInputs:       0,
 				Source:              0,
+				NetworkIdentifier:   1,
+				LocalAreaCode:       1,
+				CellIdentifier:      1,
+				SignalStrength:      1,
 			},
 		},
 	}
